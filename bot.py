@@ -8,7 +8,7 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
-	bot.reply_to(message, "PORCODIO")
+	bot.reply_to(message, "Ci siamo :)")
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
