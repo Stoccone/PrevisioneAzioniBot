@@ -11,7 +11,8 @@ def send_welcome(message):
 	bot.reply_to(message, "Ci siamo :)")
 
 @bot.message_handler(func=lambda message: True)
+ # Invia un messaggio di errore quando il bot riceve un comando non valido
 def echo_all(message):
-	bot.reply_to(message, message.text)
+	bot.reply_to(message, "Mi dispiace, non ho capito il comando che hai inviato.")
 
 bot.infinity_polling()
