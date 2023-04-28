@@ -4,7 +4,7 @@ bot = telebot.TeleBot("6248512780:AAHL0E69kmNatnoU-DBMZMJ_xBYM8C0WEUA")
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-	bot.reply_to(message, "Howdy, what do you want to do?")
+	bot.reply_to(message, "Ciao, cosa vuoi fare?")
 	# Aspetta l'input dell'utente
 	bot.register_next_step_handler(message, handle_input)
 # Gestisce l'input dell'utente
