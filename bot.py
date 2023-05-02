@@ -56,6 +56,13 @@ def send_welcome(message):
 
 	bot.send_photo(chat_id=message.chat.id, photo=buf)
 
+
+@bot.message_handler(commands=['kill'])
+def handle_stop(message):
+    # Interrompe il polling del bot
+    bot.stop_polling()
+	
+
 	
 
 @bot.message_handler(func=lambda message: True)
