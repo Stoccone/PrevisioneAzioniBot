@@ -14,24 +14,9 @@ import yfinance as yf
 from telebot import types
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import datetime as dtt
 from datetime import datetime, timedelta
 
 bot = telebot.TeleBot("6248512780:AAHL0E69kmNatnoU-DBMZMJ_xBYM8C0WEUA")
-scaler = MinMaxScaler(feature_range = (0,1)).fit(np.array([11.261428833007812, 73.4124984741211]).reshape(-1, 1))
-
-
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    keyboard = InlineKeyboardMarkup()
-    button = InlineKeyboardButton(text='Clicca qui', callback_data='button_clicked')
-    keyboard.add(button)
-    bot.send_message(chat_id=message.chat.id, text='Messaggio del bot', reply_markup=keyboard)
-
-
-@bot.message_handler(commands=['help'])
-def send_welcome(message):
-	bot.reply_to(message, "Per visualizzare il grafico di una determinata azione scrivi /view\n Per visualizzare la predizione puntuale di domani scrivi /predictTomorrow")
 
 
 # Funzione per verificare se un ticker di azione è valido
@@ -83,7 +68,7 @@ def predict(message):
     return ticker, start_date, end_date
 
 # Funzione per gestire il comando /start
-@bot.message_handler(commands=['view'])
+@bot.message_handler(commands=['predict'])
 def create_chart(message):
     # Esegue la funzione predict per ottenere le date
     dates = predict(message)
@@ -112,95 +97,6 @@ def create_chart(message):
         bot.send_message(message.chat.id, "Eccoti il grafico")
     except:
         bot.send_message(chat_id=message.chat.id, text="Si è verificato un errore durante la creazione del grafico. Assicurati che il simbolo dell'azione e le date selezionate siano corretti e riprova.")
-
-@bot.message_handler(commands=['predictTomorrow'])
-def predict_stock_price(message):
-		model = load_model("aapl_model.h5")
-
-		# Prendi i dati degli ultimi 60 giorni per creare la sequenza temporale
-		new_data = yf.download("AAPL", start=dtt.date.today() - dtt.timedelta(days=12*30), end=dtt.date.today().strftime("%Y-%m-%d")).filter(['Close'])
-
-		scaled_data = scaler.transform(new_data)
-		test_data = scaled_data
-		x_test = []
-		y_test = []
-		for i in range(60, len(test_data)):
-			x_test.append(test_data[i-60:i, 0]) 
-			y_test.append(test_data[i, 0]) 
-		x_test = np.array(x_test)
-		x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1 ))
-
-		model = load_model("aapl_model.h5")
-		predictions = model.predict(x_test)
-		predictions = scaler.inverse_transform(predictions)
-
-		valid = new_data[60:].copy()
-		valid['Predictions'] = predictions
-		plt.figure(figsize=(16,8))
-		#plt.title('Model')
-		plt.xlabel('Date', fontsize=18)
-		plt.ylabel('Close Price USD ($)', fontsize=18)
-		plt.plot(valid[['Close', 'Predictions']])
-		plt.legend(['Actual', 'Predictions'], loc='lower right')
-		buf = BytesIO()
-		plt.savefig(buf, format='png')
-		buf.seek(0)
-
-		bot.send_photo(chat_id=message.chat.id, photo=buf)
-		
-		last_60_days = new_data[-60:].values
-		last_60_days_scaled = scaler.transform(last_60_days)
-		x_test = np.array([last_60_days_scaled])
-		x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
-
-		pred_price = model.predict(x_test)
-		pred_price = scaler.inverse_transform(pred_price)
-		bot.reply_to(message, f"The predicted price for AAPL is {pred_price[0][0]:.2f}")
-
-
-@bot.message_handler(commands=['preview'])
-def predizioneAndamento(message):
-    # Esegue la funzione predict per ottenere le date
-    dates = predict(message)
-    if dates is None:
-        return
-
-    # Parsing delle date
-    ticker, start_date, end_date = dates
-
-    df = yf.download(ticker, start=start_date, end=end_date)
-    dataset = df.filter(['Close']).values
-
-    scaled_data = scaler.transform(dataset)
-    test_data = scaled_data
-    x_test = []
-    y_test = []
-    for i in range(60, len(test_data)):
-        x_test.append(test_data[i-60:i, 0]) 
-        y_test.append(test_data[i, 0]) 
-    x_test = np.array(x_test)
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1 ))
-
-    model = load_model("aapl_model.h5")
-    predictions = model.predict(x_test)
-    predictions = scaler.inverse_transform(predictions)
-
-    valid = df[60:].copy()
-    valid['Predictions'] = predictions
-    plt.figure(figsize=(16,8))
-    #plt.title('Model')
-    plt.xlabel('Date', fontsize=18)
-    plt.ylabel('Close Price USD ($)', fontsize=18)
-    plt.plot(valid[['Close', 'Predictions']])
-    plt.legend(['Actual', 'Predictions'], loc='lower right')
-
-    buf = BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-
-    bot.send_photo(chat_id=message.chat.id, photo=buf)
-
-
 
 
 @bot.message_handler(func=lambda message: True)
