@@ -23,15 +23,12 @@ scaler = MinMaxScaler(feature_range = (0,1)).fit(np.array([11.261428833007812, 7
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    keyboard = InlineKeyboardMarkup()
-    button = InlineKeyboardButton(text='Clicca qui', callback_data='button_clicked')
-    keyboard.add(button)
-    bot.send_message(chat_id=message.chat.id, text='Messaggio del bot', reply_markup=keyboard)
+    bot.reply_to(message, "Questo bot utilizza un modello ML nell'ambito della previsione azionaria :)")
 
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
-	bot.reply_to(message, "Per visualizzare il grafico di una determinata azione scrivi /view\n Per visualizzare la predizione puntuale di domani scrivi /predictTomorrow")
+	bot.reply_to(message, "1) Per visualizzare il grafico di una determinata azione scrivi /view\n2) Per visualizzare la predizione di domani scrivi /predictTomorrow\n3) Per visualizzare l'andamento del modello in una determinata azione scrivi /predict")
 
 
 # Funzione per verificare se un ticker di azione è valido
@@ -47,7 +44,7 @@ def predict(message):
     # Esegue il parsing del comando per ottenere ticker e date
     command_parts = message.text.split()
     if len(command_parts) != 4 or command_parts[1] == "" or command_parts[2] == "" or command_parts[3] == "":
-        bot.reply_to(message, "Utilizzo del comando: /predict <ticker> <data_inizio> <data_fine> (formato data: 'YYYY-MM-DD')")
+        bot.reply_to(message, "Utilizzo del comando: <ticker> <data_inizio> <data_fine> (formato data: 'YYYY-MM-DD')")
         return
     ticker = command_parts[1].upper()
     start_date = command_parts[2]
@@ -158,7 +155,7 @@ def predict_stock_price(message):
 		bot.reply_to(message, f"The predicted price for AAPL is {pred_price[0][0]:.2f}")
 
 
-@bot.message_handler(commands=['preview'])
+@bot.message_handler(commands=['predict'])
 def predizioneAndamento(message):
     # Esegue la funzione predict per ottenere le date
     dates = predict(message)
